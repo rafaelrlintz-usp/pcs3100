@@ -1,0 +1,29 @@
+scene praia False
+a "O dia está lindo hoje, não acha?"
+l "Sim, perfeito para uma caminhada."
+a "Vamos até a cidade depois?"
+scene cidade True
+c "Oi, vocês chegaram cedo!"
+a "Clara! Estávamos com saudade."
+c "Tenho algo para mostrar."
+scene montanha True
+c "Essa é a vista que falei."
+l "Uau... é incrível."
+m "Finalmente vocês chegaram."
+v "Miguel estava nos esperando aqui."
+m "Vamos tirar uma foto juntos."
+scene noite True
+v "Que dia maravilhoso."
+a "Sim, terminou melhor do que começou."
+m "A noite está linda."
+scene floresta True
+c "Amanhã podemos visitar a floresta?"
+v "Adoro a energia daqui."
+a "Combinado. Voltaremos de manhã."
+l "E dessa vez trarei meu violão."
+scene praia True
+m "De volta à praia, nosso ponto de partida."
+a "E onde tudo recomeça."
+c "Vamos aproveitar o momento."
+v "E escrever novas memórias juntos."
+l "Sempre juntos."
