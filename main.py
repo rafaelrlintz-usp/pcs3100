@@ -71,27 +71,27 @@ def mostrar_dialogo(ident, frase):
     texto_render = font_texto.render(frase, True, BLACK)
     screen.blit(texto_render, (60, HEIGHT - 90))
 
-# Carrega o roteiro de um arquivo externo
-with open(os.path.join("assets", "roteiro.txt"), encoding="utf-8") as f:
+def carregar_roteiro(caminho):
     roteiro = []
-    for linha in f:
-        linha = linha.strip()
-        if not linha or linha.startswith("#"):
-            continue
-        if linha.startswith("personagem"):
-            _, pid, nome, rgb = linha.split(None, 3)
-            r, g, b = map(int, rgb.split(","))
-            personagens[pid] = Personagem(nome, (r, g, b))
-        elif linha.startswith("background"):
-            _, bid, rgb = linha.split(None, 2)
-            r, g, b = map(int, rgb.split(","))
-            surf = pygame.Surface((WIDTH, HEIGHT))
-            surf.fill((r, g, b))
-            backgrounds[bid] = surf
-        else:
-            roteiro.append(linha)
+    with open(caminho, encoding="utf-8") as f:
+        for linha in f:
+            linha = linha.strip()
+            if not linha or linha.startswith("#"):
+                continue
+            if linha.startswith("personagem"):
+                _, pid, nome, rgb = linha.split(None, 3)
+                r, g, b = map(int, rgb.split(","))
+                personagens[pid] = Personagem(nome, (r, g, b))
+            elif linha.startswith("background"):
+                _, bid, rgb = linha.split(None, 2)
+                r, g, b = map(int, rgb.split(","))
+                surf = pygame.Surface((WIDTH, HEIGHT))
+                surf.fill((r, g, b))
+                backgrounds[bid] = surf
+            else:
+                roteiro.append(linha)
+    return roteiro
 
-index = 0
 fala_em_andamento = (None, "")
 
 # Processador de ações
@@ -122,26 +122,33 @@ def executar_linha(linha):
         fala = fala.strip().strip('"')
         fala_em_andamento = (ident, fala)
 
-# Loop principal
-rodando = True
-executar_linha(roteiro[index])
-while rodando:
-    clock.tick(60)
-    for evento in pygame.event.get():
-        if evento.type == pygame.QUIT:
-            rodando = False
-        elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_SPACE:
-            index += 1
-            if index < len(roteiro):
-                executar_linha(roteiro[index])
-            else:
-                index = len(roteiro) - 1
+def main():
+    global index, roteiro
+    global index
+    roteiro = carregar_roteiro(os.path.join("assets", "roteiro.txt"))
+    index = 0
+    executar_linha(roteiro[index])
+    rodando = True
+    while rodando:
+        clock.tick(60)
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                rodando = False
+            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_SPACE:
+                index += 1
+                if index < len(roteiro):
+                    executar_linha(roteiro[index])
+                else:
+                    index = len(roteiro) - 1
 
-    screen.blit(backgrounds[current_background], (0, 0))
-    ident, fala = fala_em_andamento
-    if fala:
-        mostrar_dialogo(ident, fala)
-    pygame.display.flip()
+        screen.blit(backgrounds[current_background], (0, 0))
+        ident, fala = fala_em_andamento
+        if fala:
+            mostrar_dialogo(ident, fala)
+        pygame.display.flip()
 
-pygame.quit()
-sys.exit()
+    pygame.quit()
+    sys.exit()
+
+if __name__ == "__main__":
+    main()
