@@ -21,20 +21,6 @@ PRAIA_COR = (238, 214, 175)   # areia clara
 font_texto = pygame.font.SysFont("arial", 28)
 font_nome = pygame.font.SysFont("arial", 24, bold=True)
 
-# Cria superfícies sólidas para os fundos
-backgrounds = {
-    "praia": pygame.Surface((WIDTH, HEIGHT)),
-    "floresta": pygame.Surface((WIDTH, HEIGHT)),
-    "cidade": pygame.Surface((WIDTH, HEIGHT)),
-    "noite": pygame.Surface((WIDTH, HEIGHT)),
-    "montanha": pygame.Surface((WIDTH, HEIGHT))
-}
-backgrounds["praia"].fill(PRAIA_COR)
-backgrounds["floresta"].fill(FLORESTA_COR)
-backgrounds["cidade"].fill((200, 200, 255))  # azul acinzentado
-backgrounds["noite"].fill((20, 20, 60))       # azul escuro
-backgrounds["montanha"].fill((160, 160, 160)) # cinza claro
-
 current_background = "praia"
 
 # Função para fazer fade entre fundos com fundo negro entre transições (sem escurecer o fundo inicial)
@@ -75,14 +61,8 @@ class Personagem:
         self.nome = nome
         self.cor = cor
 
-personagens = {
-    "a": Personagem("Ana", (255, 120, 120)),
-    "l": Personagem("Léo", (120, 150, 255)),
-    "c": Personagem("Clara", (200, 100, 255)),
-    "m": Personagem("Miguel", (255, 200, 100)),
-    "v": Personagem("Valentina", (100, 200, 150))
-}
-
+personagens = {}
+backgrounds = {}
 # Caixa de diálogo
 def mostrar_dialogo(ident, frase):
     pygame.draw.rect(screen, DIALOG_BG, (40, HEIGHT - 140, WIDTH - 80, 100), border_radius=8)

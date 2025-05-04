@@ -1,3 +1,15 @@
+personagem a Ana 255,120,120
+personagem l Léo 120,150,255
+personagem c Clara 200,100,255
+personagem m Miguel 255,200,100
+personagem v Valentina 100,200,150
+
+background praia 238,214,175
+background floresta 34,139,34
+background cidade 200,200,255
+background noite 20,20,60
+background montanha 160,160,160
+
 scene praia False
 a "O dia está lindo hoje, não acha?"
 l "Sim, perfeito para uma caminhada."
