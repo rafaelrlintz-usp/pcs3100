@@ -11,17 +11,12 @@ pygame.display.set_caption("Minha Visual Novel")
 clock = pygame.time.Clock()
 
 # Cores
-WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 DIALOG_BG = (240, 240, 240)
-FLORESTA_COR = (34, 139, 34)  # verde
-PRAIA_COR = (238, 214, 175)   # areia clara
 
 # Fontes
 font_texto = pygame.font.SysFont("arial", 28)
 font_nome = pygame.font.SysFont("arial", 24, bold=True)
-
-current_background = "praia"
 
 # Função para fazer fade entre fundos com fundo negro entre transições (sem escurecer o fundo inicial)
 def fade_para(novo_background, nova_fala=None):
@@ -55,7 +50,7 @@ def fade_para(novo_background, nova_fala=None):
         pygame.display.flip()
         pygame.time.delay(30)
 
-# Personagens com identificadores
+# Classe Personagem
 class Personagem:
     def __init__(self, nome, cor):
         self.nome = nome
@@ -63,6 +58,8 @@ class Personagem:
 
 personagens = {}
 backgrounds = {}
+current_background = "praia"
+
 # Caixa de diálogo
 def mostrar_dialogo(ident, frase):
     pygame.draw.rect(screen, DIALOG_BG, (40, HEIGHT - 140, WIDTH - 80, 100), border_radius=8)
