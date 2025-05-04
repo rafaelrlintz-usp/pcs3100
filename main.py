@@ -124,7 +124,6 @@ def executar_linha(linha):
 
 def main():
     global index, roteiro
-    global index
     roteiro = carregar_roteiro(os.path.join("assets", "roteiro.txt"))
     index = 0
     executar_linha(roteiro[index])
