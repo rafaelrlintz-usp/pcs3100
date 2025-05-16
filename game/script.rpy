@@ -146,12 +146,8 @@ label start:
 
     scene bg hist00 mod00 cena02
 
-    r "Hoje, o nosso dia foi cheio de emoção!"
-    r "Conseguimos experimentar várias delas em diversos contextos!"
-    r "Mas acho que meu {i}hardware{/i} está saturado por hoje..."
-
     "Robi, então, se prepara para retornar a seu planeta natal, satisfeito com sua pesquisa."
-    "Daqui a algumas poucas horas, já decola rumo a Xylos."
+    "Daqui a algumas poucas horas, já decola rumo a GDSGFDsgdsigus."
 
     r "Adorei essa espécie humana! Não vejo a hora de voltar aqui!"
 
