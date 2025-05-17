@@ -1,5 +1,6 @@
 import pygame
 import sys
+import queue
 from gpiozero import Button, LED, PWMOutputDevice, LEDCharDisplay
 
 # Inicialização do pygame
@@ -73,6 +74,7 @@ etapa = 0
 esperando_emocao = False
 emocao_correta = None
 acertos = 0
+comandos_pendentes = queue.Queue()
 
 def avancar_fala():
     global etapa, esperando_emocao, emocao_correta
@@ -136,9 +138,9 @@ def processar_emocao(resposta):
     etapa += 1
     avancar_fala()
 
-# Liga botões físicos às emoções
+# Liga botões físicos às emoções usando fila
 for nome, botao in emocoes.items():
-    botao.when_pressed = lambda n=nome: processar_emocao(n)
+    botao.when_pressed = lambda n=nome: comandos_pendentes.put(n)
 
 # Início
 avancar_fala()
@@ -147,6 +149,12 @@ avancar_fala()
 rodando = True
 while rodando:
     clock.tick(60)
+
+    # Processa comandos da fila
+    while not comandos_pendentes.empty():
+        resposta = comandos_pendentes.get()
+        processar_emocao(resposta)
+
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             rodando = False
