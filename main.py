@@ -1,153 +1,155 @@
-# main.py
 import pygame
 import sys
-import os
+from gpiozero import Button, LED, Buzzer, LEDCharDisplay
 
-# Inicialização
+# Inicialização do pygame
 pygame.init()
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Minha Visual Novel")
+pygame.display.set_caption("Visual Novel - Emoções")
 clock = pygame.time.Clock()
 
-# Cores
+# Cores e fontes
 BLACK = (0, 0, 0)
 DIALOG_BG = (240, 240, 240)
-
-# Fontes
+BACKGROUND_CORES = {
+    "praia": (135, 206, 235),      # azul claro
+    "floresta": (34, 139, 34)      # verde escuro
+}
 font_texto = pygame.font.SysFont("arial", 28)
 font_nome = pygame.font.SysFont("arial", 24, bold=True)
 
-# Função para fazer fade entre fundos com fundo negro entre transições (sem escurecer o fundo inicial)
-def fade_para(novo_background, nova_fala=None):
-    global current_background, fala_em_andamento
-    black_surface = pygame.Surface((WIDTH, HEIGHT))
-    black_surface.fill((0, 0, 0))
+# Emoções e GPIOs
+emocoes = {
+    "alegria": Button(12),
+    "tristeza": Button(13),
+    "raiva": Button(14),
+    "medo": Button(15),
+    "surpresa": Button(16)
+}
+led_verde = LED(9)
+led_vermelho = LED(10)
+buzzer = Buzzer(11)
 
-    # Fade out atual
-    for alpha in range(0, 255, 15):
-        screen.blit(backgrounds[current_background], (0, 0))
-        ident, fala = fala_em_andamento
-        if fala:
-            mostrar_dialogo(ident, fala)
-        black_surface.set_alpha(alpha)
-        screen.blit(black_surface, (0, 0))
-        pygame.display.flip()
-        pygame.time.delay(30)
+# Display de 7 segmentos
+# Segmentos: A, B, C, D, E, F, G
+display = LEDCharDisplay(2, 3, 4, 5, 6, 7, 8)
 
-    # Quando tela está escura, troca o fundo e limpa fala
-    current_background = novo_background
-    fala_em_andamento = nova_fala if nova_fala else (None, "")
+current_background = "praia"
 
-    # Exibe fundo novo com fade in
-    for alpha in range(255, -1, -15):
-        screen.blit(backgrounds[current_background], (0, 0))
-        ident, fala = fala_em_andamento
-        if fala:
-            mostrar_dialogo(ident, fala)
-        black_surface.set_alpha(alpha)
-        screen.blit(black_surface, (0, 0))
-        pygame.display.flip()
-        pygame.time.delay(30)
-
-# Classe Personagem
 class Personagem:
     def __init__(self, nome, cor):
         self.nome = nome
         self.cor = cor
 
-personagens = {}
-backgrounds = {}
-current_background = "praia"
+personagens = {
+    "Ana": Personagem("Ana", (255, 120, 120)),
+    "Léo": Personagem("Léo", (120, 150, 255))
+}
 
 # Caixa de diálogo
-def mostrar_dialogo(ident, frase):
+def mostrar_dialogo(nome, frase):
     pygame.draw.rect(screen, DIALOG_BG, (40, HEIGHT - 140, WIDTH - 80, 100), border_radius=8)
     pygame.draw.rect(screen, BLACK, (40, HEIGHT - 140, WIDTH - 80, 100), 2, border_radius=8)
-    if ident in personagens:
-        p = personagens[ident]
+    if nome in personagens:
+        p = personagens[nome]
         nome_render = font_nome.render(p.nome, True, p.cor)
         screen.blit(nome_render, (60, HEIGHT - 130))
     texto_render = font_texto.render(frase, True, BLACK)
     screen.blit(texto_render, (60, HEIGHT - 90))
 
-def carregar_roteiro(caminho):
-    roteiro = []
-    with open(caminho, encoding="utf-8") as f:
-        for linha in f:
-            linha = linha.strip()
-            if not linha or linha.startswith("#"):
-                continue
-            if linha.startswith("personagem"):
-                _, pid, nome, rgb = linha.split(None, 3)
-                r, g, b = map(int, rgb.split(","))
-                personagens[pid] = Personagem(nome, (r, g, b))
-            elif linha.startswith("background"):
-                _, bid, rgb = linha.split(None, 2)
-                r, g, b = map(int, rgb.split(","))
-                surf = pygame.Surface((WIDTH, HEIGHT))
-                surf.fill((r, g, b))
-                backgrounds[bid] = surf
-            else:
-                roteiro.append(linha)
-    return roteiro
+def mudar_background(bg):
+    global current_background
+    if bg in BACKGROUND_CORES:
+        current_background = bg
 
-fala_em_andamento = (None, "")
+def mostrar_fala(nome, texto):
+    screen.fill(BACKGROUND_CORES[current_background])
+    mostrar_dialogo(nome, texto)
+    pygame.display.flip()
 
-# Processador de ações
-def executar_linha(linha):
-    global current_background, fala_em_andamento, index
-    if linha.startswith("scene"):
-        partes = linha.split()
-        nome = partes[1]
-        fade = partes[2].lower() == "true"
-        # Captura a próxima fala (se houver)
-        proxima_fala = None
-        if index + 1 < len(roteiro):
-            proxima = roteiro[index + 1]
-            if not proxima.startswith("scene"):
-                ident, texto = proxima.split(" ", 1)
-                proxima_fala = (ident, texto.strip().strip('"'))
+# Controle de fluxo
+etapa = 0
+esperando_emocao = False
+emocao_correta = None
+acertos = 0
 
-        if nome in backgrounds:
-            if fade:
-                fade_para(nome, proxima_fala)
-            else:
-                current_background = nome
-                fala_em_andamento = proxima_fala if proxima_fala else (None, "")
+def avancar_fala():
+    global etapa, esperando_emocao, emocao_correta
 
-        index += 1
+    if etapa == 0:
+        mostrar_fala("Ana", "Ei! Que bom te ver por aqui.")
+        etapa += 1
+
+    elif etapa == 1:
+        mostrar_fala("?", "Qual emoção foi expressa?")
+        emocao_correta = "alegria"
+        esperando_emocao = True
+
+    elif etapa == 2:
+        mostrar_fala("Léo", "Vem comigo, vou te mostrar um lugar especial.")
+        etapa += 1
+
+    elif etapa == 3:
+        mudar_background("floresta")
+        mostrar_fala("?", "Qual emoção foi expressa?")
+        emocao_correta = "surpresa"
+        esperando_emocao = True
+
+    elif etapa == 4:
+        mostrar_fala("Ana", "Vamos trocar o cenário. Prepare-se!")
+        etapa += 1
+
+    elif etapa == 5:
+        mostrar_fala("Léo", "Chegamos. Olha só essa floresta!")
+        etapa += 1
+
+    elif etapa == 6:
+        mostrar_fala("?", f"Fim da história. Você acertou {acertos}.")
+        display.value = str(acertos)[-1]  # Exibe 0-9 no display
+        etapa += 1
+
+def processar_emocao(resposta):
+    global esperando_emocao, etapa, acertos
+    if not esperando_emocao:
+        return
+
+    if resposta == emocao_correta:
+        print("Acertou!")
+        acertos += 1
+        led_verde.on()
+        buzzer.on()
+        pygame.time.wait(500)
+        led_verde.off()
+        buzzer.off()
     else:
-        ident, fala = linha.split(" ", 1)
-        fala = fala.strip().strip('"')
-        fala_em_andamento = (ident, fala)
+        print("Errou!")
+        led_vermelho.on()
+        buzzer.on()
+        pygame.time.wait(500)
+        led_vermelho.off()
+        buzzer.off()
 
-def main():
-    global index, roteiro
-    roteiro = carregar_roteiro(os.path.join("assets", "roteiro.txt"))
-    index = 0
-    executar_linha(roteiro[index])
-    rodando = True
-    while rodando:
-        clock.tick(60)
-        for evento in pygame.event.get():
-            if evento.type == pygame.QUIT:
-                rodando = False
-            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_SPACE:
-                index += 1
-                if index < len(roteiro):
-                    executar_linha(roteiro[index])
-                else:
-                    index = len(roteiro) - 1
+    esperando_emocao = False
+    etapa += 1
+    avancar_fala()
 
-        screen.blit(backgrounds[current_background], (0, 0))
-        ident, fala = fala_em_andamento
-        if fala:
-            mostrar_dialogo(ident, fala)
-        pygame.display.flip()
+# Liga botões físicos às emoções
+for nome, botao in emocoes.items():
+    botao.when_pressed = lambda n=nome: processar_emocao(n)
 
-    pygame.quit()
-    sys.exit()
+# Início
+avancar_fala()
 
-if __name__ == "__main__":
-    main()
+# Loop principal
+rodando = True
+while rodando:
+    clock.tick(60)
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            rodando = False
+        elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_SPACE and not esperando_emocao:
+            avancar_fala()
+
+pygame.quit()
+sys.exit()
