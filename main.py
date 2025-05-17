@@ -28,6 +28,7 @@ emocoes = {
     "medo": Button(15),
     "surpresa": Button(16)
 }
+avancar = Button(17)
 led_verde = LED(9)
 led_vermelho = LED(10)
 buzzer = PWMOutputDevice(11)
@@ -135,12 +136,13 @@ def processar_emocao(resposta):
         esperando_emocao = False
         etapa += 1
         avancar_fala()
-    else:
-        avancar_fala()
 
 # Liga botões físicos às emoções usando fila
 for nome, botao in emocoes.items():
     botao.when_pressed = lambda n=nome: comandos_pendentes.put(n)
+
+# Botão de avançar
+avancar.when_pressed = lambda: comandos_pendentes.put("avancar")
 
 # Início
 avancar_fala()
@@ -153,7 +155,10 @@ while rodando:
     # Processa comandos da fila
     while not comandos_pendentes.empty():
         resposta = comandos_pendentes.get()
-        processar_emocao(resposta)
+        if resposta == "avancar" and not esperando_emocao:
+            avancar_fala()
+        elif resposta in emocoes:
+            processar_emocao(resposta)
 
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
