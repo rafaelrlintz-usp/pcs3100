@@ -1,6 +1,6 @@
 import pygame
 import sys
-from gpiozero import Button, LED, Buzzer, LEDCharDisplay
+from gpiozero import Button, LED, PWMOutputDevice, LEDCharDisplay
 
 # Inicialização do pygame
 pygame.init()
@@ -29,7 +29,7 @@ emocoes = {
 }
 led_verde = LED(9)
 led_vermelho = LED(10)
-buzzer = Buzzer(11)
+buzzer = PWMOutputDevice(11)
 
 # Display de 7 segmentos
 # Segmentos: A, B, C, D, E, F, G
@@ -109,6 +109,12 @@ def avancar_fala():
         display.value = str(acertos)[-1]  # Exibe 0-9 no display
         etapa += 1
 
+def apito(frequencia, duracao_ms):
+    buzzer.frequency = frequencia
+    buzzer.value = 0.5  # volume médio
+    pygame.time.wait(duracao_ms)
+    buzzer.off()
+
 def processar_emocao(resposta):
     global esperando_emocao, etapa, acertos
     if not esperando_emocao:
@@ -118,17 +124,13 @@ def processar_emocao(resposta):
         print("Acertou!")
         acertos += 1
         led_verde.on()
-        buzzer.on()
-        pygame.time.wait(500)
+        apito(1000, 500)  # apito agudo
         led_verde.off()
-        buzzer.off()
     else:
         print("Errou!")
         led_vermelho.on()
-        buzzer.on()
-        pygame.time.wait(500)
+        apito(200, 500)   # apito grave
         led_vermelho.off()
-        buzzer.off()
 
     esperando_emocao = False
     etapa += 1
