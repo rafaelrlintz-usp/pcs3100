@@ -114,9 +114,19 @@ def avancar_fala():
 
 def apito(frequencia, duracao_ms):
     buzzer.frequency = frequencia
-    buzzer.value = 0.5  # volume médio
+    buzzer.value = 0.5
     pygame.time.wait(duracao_ms)
     buzzer.off()
+
+def melodia_acerto():
+    notas = [880, 1046, 1318]  # Lá, Dó, Mi (agudo)
+    duracoes = [200, 200, 600]  # total = 1 segundo
+    for f, d in zip(notas, duracoes):
+        buzzer.frequency = f
+        buzzer.value = 0.5
+        pygame.time.wait(d)
+        buzzer.off()
+        pygame.time.wait(50)  # pequena pausa entre as notas
 
 def processar_emocao(resposta):
     global esperando_emocao, etapa, acertos
@@ -125,7 +135,7 @@ def processar_emocao(resposta):
             print("Acertou!")
             acertos += 1
             led_verde.on()
-            apito(1000, 500)  # apito agudo
+            melodia_acerto()
             led_verde.off()
         else:
             print("Errou!")
