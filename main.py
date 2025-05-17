@@ -119,24 +119,24 @@ def apito(frequencia, duracao_ms):
 
 def processar_emocao(resposta):
     global esperando_emocao, etapa, acertos
-    if not esperando_emocao:
-        return
+    if esperando_emocao:
+        if resposta == emocao_correta:
+            print("Acertou!")
+            acertos += 1
+            led_verde.on()
+            apito(1000, 500)  # apito agudo
+            led_verde.off()
+        else:
+            print("Errou!")
+            led_vermelho.on()
+            apito(200, 500)   # apito grave
+            led_vermelho.off()
 
-    if resposta == emocao_correta:
-        print("Acertou!")
-        acertos += 1
-        led_verde.on()
-        apito(1000, 500)  # apito agudo
-        led_verde.off()
+        esperando_emocao = False
+        etapa += 1
+        avancar_fala()
     else:
-        print("Errou!")
-        led_vermelho.on()
-        apito(200, 500)   # apito grave
-        led_vermelho.off()
-
-    esperando_emocao = False
-    etapa += 1
-    avancar_fala()
+        avancar_fala()
 
 # Liga botões físicos às emoções usando fila
 for nome, botao in emocoes.items():
@@ -158,8 +158,6 @@ while rodando:
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             rodando = False
-        elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_SPACE and not esperando_emocao:
-            avancar_fala()
 
 pygame.quit()
 sys.exit()
